@@ -141,3 +141,26 @@
         @apply bg-background text-foreground;
     }
 }
+
+/* Wallet (design-spec) pressed states */
+.wallet-key:active {
+    transform: translateY(2px);
+    box-shadow:
+        0 0 0 #0e0e10,
+        inset 0 1px 0 rgba(255, 255, 255, 0.05) !important;
+}
+
+.wallet-skew-key:active {
+    background: linear-gradient(180deg, #1c1d21, #101114) !important;
+    box-shadow:
+        inset 0 1px 0 rgba(255, 255, 255, 0.05),
+        0 0 0 1px #050506 !important;
+}
+
+.wallet-knob:active {
+    transform: scale(0.97);
+}
+
+.wallet-list::-webkit-scrollbar {
+    display: none;
+}

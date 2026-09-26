@@ -67,7 +67,7 @@ The **first time**, this builds the app's container and can take **5–10 minute
 
 Wait about 20 seconds after step 4c, then open your web browser and go to:
 
-**<http://localhost:8000>**
+**<http://127.0.0.1>**
 
 Click **Register** to create an account. The account only exists on your computer.
 
@@ -93,15 +93,15 @@ Stopping the app does not delete your data. When you're done for the day you can
 Docker Desktop isn't running. Open it, wait for "Engine running", and try again.
 
 **"port is already allocated" or "address already in use"**
-Another program is already using port 8000 or 5173. Open the `.env` file in a text editor (TextEdit on Mac, Notepad on Windows) and change these three lines near the top to unused numbers, for example:
+Another program is already using port 80 or 5173. Open the `.env` file in a text editor (TextEdit on Mac, Notepad on Windows) and change these three lines near the top to unused numbers, for example:
 
 ```
-APP_URL=http://localhost:8001
+APP_URL=http://127.0.0.1:8001
 APP_PORT=8001
 VITE_PORT=5174
 ```
 
-Save the file, run `./vendor/bin/sail down`, then `./vendor/bin/sail up -d`, and use the new address (here <http://localhost:8001>).
+Save the file, run `./vendor/bin/sail down`, then `./vendor/bin/sail up -d`, and use the new address (here <http://127.0.0.1:8001>).
 
 > On a Mac, `.env` is hidden in Finder. Press ⌘ + Shift + . (period) to show hidden files.
 
