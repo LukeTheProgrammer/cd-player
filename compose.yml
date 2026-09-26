@@ -47,7 +47,8 @@ services:
           set -e
           composer install --no-interaction
           npm install
-          [ -f .env ] || { cp .env.example .env; php artisan key:generate --no-interaction; }
+          [ -f .env ] || cp .env.example .env
+          grep -q "^APP_KEY=." .env || php artisan key:generate --no-interaction
           touch database/database.sqlite
           php artisan migrate --force --no-interaction
         '
