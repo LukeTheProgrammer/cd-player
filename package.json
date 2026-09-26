@@ -1,5 +1,6 @@
 {
     "$schema": "https://www.schemastore.org/package.json",
+    "name": "cd-player",
     "private": true,
     "type": "module",
     "scripts": {

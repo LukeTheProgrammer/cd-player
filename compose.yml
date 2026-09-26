@@ -1,0 +1,79 @@
+# For more information: https://laravel.com/docs/sail
+name: cd-player
+
+x-sail: &sail
+  build:
+    context: ./vendor/laravel/sail/runtimes/8.5
+    dockerfile: Dockerfile
+    args:
+      WWWGROUP: "${WWWGROUP:-1000}"
+  image: sail-8.5/app
+  environment:
+    WWWUSER: "${WWWUSER:-1000}"
+    LARAVEL_SAIL: 1
+    XDEBUG_MODE: "${SAIL_XDEBUG_MODE:-off}"
+    XDEBUG_CONFIG: "${SAIL_XDEBUG_CONFIG:-client_host=host.docker.internal}"
+    IGNITION_LOCAL_SITES_PATH: "${PWD}"
+  volumes:
+    - .:/var/www/html
+    # Keep Linux node_modules separate from the host's macOS build (native binaries differ).
+    - node_modules:/var/www/html/node_modules
+
+x-app: &app
+  <<: *sail
+  extra_hosts:
+    - "host.docker.internal:host-gateway"
+
+x-after-setup: &after-setup
+  depends_on:
+    setup:
+      condition: service_completed_successfully
+
+services:
+  # One-off: install dependencies, create .env and the SQLite database, run migrations.
+  # Starts as root only to hand the node_modules volume to the sail user.
+  setup:
+    <<: *app
+    environment:
+      WWWUSER: "${WWWUSER:-1000}"
+      SUPERVISOR_PHP_USER: root
+    command:
+      - sh
+      - -c
+      - |
+        set -e
+        find node_modules ! -user sail -exec chown sail:sail {} +
+        exec gosu sail sh -c '
+          set -e
+          composer install --no-interaction
+          npm install
+          [ -f .env ] || { cp .env.example .env; php artisan key:generate --no-interaction; }
+          touch database/database.sqlite
+          php artisan migrate --force --no-interaction
+        '
+
+  # Sail's default process: supervisord running `php artisan serve` on port 80.
+  app:
+    <<: [*app, *after-setup]
+    ports:
+      - "${APP_PORT:-80}:80"
+      - "${VITE_PORT:-5173}:${VITE_PORT:-5173}"
+
+  # Shares the app container's network so both sides reach each other on localhost
+  # (the browser loads assets from Vite, and Laravel calls Vite for Inertia SSR).
+  vite:
+    <<: [*sail, *after-setup]
+    command: npm run dev
+    network_mode: service:app
+
+  queue:
+    <<: [*app, *after-setup]
+    command: php artisan queue:listen --tries=1 --timeout=0
+
+  logs:
+    <<: [*app, *after-setup]
+    command: php artisan pail --timeout=0
+    tty: true
+
+volumes:
+  node_modules:
